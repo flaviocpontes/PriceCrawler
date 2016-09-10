@@ -13,8 +13,8 @@ class TestCrawlSinglePage(unittest.TestCase):
                     'page_title': 'Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos',
                     'url': 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-'
                            'perfume-feminino/p'}
-        command = [CRAWLER_EXECUTABLE, '-s', 'http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-'
-                                             'perfume-feminino/p']
+        command = [CRAWLER_EXECUTABLE, '-s', 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-'
+                                             'toilette-paco-rabanne-perfume-feminino/p']
         self.assertEqual(expected, json.loads(subprocess.run(command, stdout=subprocess.PIPE).stdout.decode()))
 
     def test_crawl_hypnose(self):
