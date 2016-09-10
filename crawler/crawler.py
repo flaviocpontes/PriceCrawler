@@ -4,6 +4,10 @@
 import sys
 
 
+def extract_attributes(html):
+    return None
+
+
 def main(args):
     if args[2] == 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p':
         print('{"product_name": "Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino - 30ml",'
