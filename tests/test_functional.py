@@ -16,3 +16,11 @@ class TestCrawlSinglePage(unittest.TestCase):
         command = [CRAWLER_EXECUTABLE, '-s', 'http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-'
                                              'perfume-feminino/p']
         self.assertEqual(expected, json.loads(subprocess.run(command, stdout=subprocess.PIPE).stdout.decode()))
+
+    def test_crawl_hypnose(self):
+        expected = {'product_name': 'Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
+                    'page_title': 'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
+                    'url': 'http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-perfume-feminino/p'}
+        command = [CRAWLER_EXECUTABLE, '-s', 'http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-'
+                                             'perfume-feminino/p']
+        self.assertEqual(expected, json.loads(subprocess.run(command, stdout=subprocess.PIPE).stdout.decode()))
