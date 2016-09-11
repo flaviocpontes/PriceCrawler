@@ -3,6 +3,11 @@
 
 import sys
 import csv
+import lxml.html
+
+
+def extract_attributes(html):
+    tree = lxml.html.document_fromstring(html)
 
 
 def main(args):

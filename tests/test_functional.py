@@ -17,6 +17,9 @@ class TestCrawlSinglePage(unittest.TestCase):
             csvreader = csv.reader(csvfile)
             return [row for row in csvreader]
 
+    def tearDown(self):
+        os.remove('teste.csv')
+
     def test_crawl_lady_million(self):
         target_page = 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'
         self.execute_command(target_page)
