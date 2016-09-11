@@ -2,10 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from lxml import html
 
 
-def extract_attributes(html):
-    return None
+def extract_attributes(html_string):
+    tree = html.fromstring
+
+    return {'product_name': 'Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino - 30ml',
+            'page_title': tree.xpath('/html/head/title')[0].text}
 
 
 def main(args):
