@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+"""
+This package is a crawler for extracting the product's name, page title and page's URL from the product pages on the
+http://www.epocacosmeticos.com.br and is meant as a technical challenge for the admission process at SIVIE.
+"""
 import sys
 import csv
 import lxml.html
 from lxml.cssselect import CSSSelector
 
-PRODUCT_NAME_SELECTOR = CSSSelector('.productName')
-
 
 def extract_product_name(elem_tree):
-    raw_text = PRODUCT_NAME_SELECTOR(elem_tree)[0].text
+    product_name_selector = CSSSelector('.productName')
+    raw_text = product_name_selector(elem_tree)[0].text
     text = ' '.join([row.strip() for row in raw_text.split('\n')]).strip()
     return text
 

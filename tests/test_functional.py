@@ -1,3 +1,7 @@
+"""
+Functional tests for the PriceCrawler project.
+"""
+
 import unittest
 import os
 import subprocess
@@ -8,6 +12,7 @@ CRAWLER_EXECUTABLE = os.path.join(CRAWLER_PATH, 'crawler.py')
 
 
 class TestCrawlSinglePage(unittest.TestCase):
+    """Tests the extranction of the page title, product name and URL from a single page."""
     def execute_command(self, page):
         command = [CRAWLER_EXECUTABLE, '-s', page, '-o', 'teste.csv']
         subprocess.run(command)

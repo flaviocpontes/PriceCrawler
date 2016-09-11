@@ -2,10 +2,11 @@ import os
 import unittest
 
 from tests import TEST_FILE_PATH
-import crawler
+from crawler import crawler
 
 
 class TestExtraction(unittest.TestCase):
+    """Tests the extraction of the sought attributes from the test html files"""
     def test_extract_from_ladymillion(self):
         expected = {'product_name': 'Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino',
                     'page_title': 'Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos'}
