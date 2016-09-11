@@ -4,10 +4,21 @@
 import sys
 import csv
 import lxml.html
+from lxml.cssselect import CSSSelector
+
+PRODUCT_NAME_SELECTOR = CSSSelector('.productName')
+
+
+def extract_product_name(elem_tree):
+    raw_text = PRODUCT_NAME_SELECTOR(elem_tree)[0].text
+    text = ' '.join([row.strip() for row in raw_text.split('\n')]).strip()
+    return text
 
 
 def extract_attributes(html):
-    tree = lxml.html.document_fromstring(html)
+    element_tree = lxml.html.document_fromstring(html)
+    return {'product_name': extract_product_name(element_tree),
+            'page_title': element_tree.xpath('head/title')[0].text}
 
 
 def main(args):
