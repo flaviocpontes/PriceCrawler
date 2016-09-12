@@ -27,3 +27,7 @@ class TestArgParsing(unittest.TestCase):
         self.assertEqual(0, config.depth)
         self.assertEqual('teste.csv', config.output)
         self.assertEqual('http://www.valid.com', config.url)
+
+    def test_invalid_url(self):
+        """Invalid URLs hould raise a ValueError"""
+        self.assertRaises(ValueError, crawler.parse_args, ['invalid_url!'])
