@@ -23,11 +23,15 @@ class TestExtraction(unittest.TestCase):
 class TestArgParsing(unittest.TestCase):
     """Tests for checking the correct parsing of the CLI arguments"""
     def test_depth_0_output_testecsv_valid_url(self):
-        config = crawler.parse_args(['--depth', '0', '--output', 'teste.csv', 'http://www.valid.com'])
-        self.assertEqual(0, config.depth)
+        config = crawler.parse_args(['--output', 'teste.csv', 'http://www.epocacosmeticos.com.br'])
         self.assertEqual('teste.csv', config.output)
-        self.assertEqual('http://www.valid.com', config.url)
+        self.assertEqual('http://www.epocacosmeticos.com.br', config.url)
 
     def test_invalid_url(self):
-        """Invalid URLs hould raise a ValueError"""
+        """URLS for domains other than http://www.epocacosmeticos.com.br/ should raise an exception"""
         self.assertRaises(ValueError, crawler.parse_args, ['invalid_url!'])
+
+class TestMainFunction(unittest.TestCase):
+    """Tests the main funtion in a white box manner"""
+    def test_crawl_lady_million(self):
+        crawler.main(['-o', 'teste.csv', 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'])

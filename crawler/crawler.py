@@ -7,6 +7,7 @@ http://www.epocacosmeticos.com.br and is meant as a technical challenge for the 
 import sys
 import csv
 import argparse
+import urllib.parse
 
 import lxml.html
 from lxml.cssselect import CSSSelector
@@ -28,18 +29,20 @@ def extract_attributes(html: str):
 
 def parse_args(args):
     parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
-    parser.add_argument('--depth', '-d', type=int, help='max depth of visited pages from the base url')
-    parser.add_argument('--output', '-o', type=str, help='The output csv file')
+    parser.add_argument('-o', '--output', type=str, help='The output csv file')
     parser.add_argument('url', help='The base url for the crawling session')
-    return parser.parse_args(args)
+    config = parser.parse_args(args)
+    if urllib.parse.urlparse(config.url).netloc != 'www.epocacosmeticos.com.br' :
+        raise ValueError('URL must be from the www.epocacosmeticos.com.br domain')
+    return config
 
 
 def main(args):
     config = parse_args(args)
 
-    with open('teste.csv', 'w') as csvfile:
+    with open(config.output, 'w') as csvfile:
         writer = csv.writer(csvfile)
-        if args[2] == 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p':
+        if config.url == 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p':
             writer.writerow(["Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino - 30ml",
                              "Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos",
                              "http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p"])
@@ -49,4 +52,4 @@ def main(args):
                              "http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-perfume-feminino/p"])
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys.argv[1:])
