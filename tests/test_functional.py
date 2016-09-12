@@ -14,7 +14,7 @@ CRAWLER_EXECUTABLE = os.path.join(CRAWLER_PATH, 'crawler.py')
 class TestCrawlSinglePage(unittest.TestCase):
     """Tests the extranction of the page title, product name and URL from a single page."""
     def execute_command(self, page):
-        command = [CRAWLER_EXECUTABLE, '-s', page, '-o', 'teste.csv']
+        command = [CRAWLER_EXECUTABLE, '-d', '0', '-o', 'teste.csv', page]
         subprocess.run(command)
 
     def load_result_csv(self):

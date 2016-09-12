@@ -6,24 +6,37 @@ http://www.epocacosmeticos.com.br and is meant as a technical challenge for the 
 """
 import sys
 import csv
+import argparse
+
 import lxml.html
 from lxml.cssselect import CSSSelector
 
 
-def extract_product_name(elem_tree):
+def extract_product_name(elem_tree: lxml.etree):
     product_name_selector = CSSSelector('.productName')
     raw_text = product_name_selector(elem_tree)[0].text
     text = ' '.join([row.strip() for row in raw_text.split('\n')]).strip()
     return text
 
 
-def extract_attributes(html):
+def extract_attributes(html: str):
+    """"""
     element_tree = lxml.html.document_fromstring(html)
     return {'product_name': extract_product_name(element_tree),
             'page_title': element_tree.xpath('head/title')[0].text}
 
 
+def parse_args(args):
+    parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
+    parser.add_argument('--depth', '-d', type=int, help='max depth of visited pages from the base url')
+    parser.add_argument('--output', '-o', type=str, help='The output csv file')
+    parser.add_argument('url', help='The base url for the crawling session')
+    return parser.parse_args(args)
+
+
 def main(args):
+    config = parse_args(args)
+
     with open('teste.csv', 'w') as csvfile:
         writer = csv.writer(csvfile)
         if args[2] == 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p':

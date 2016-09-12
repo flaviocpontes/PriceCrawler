@@ -18,3 +18,12 @@ class TestExtraction(unittest.TestCase):
                     'page_title': 'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos'}
         html = open(os.path.join(TEST_FILE_PATH, 'hypnose-eau-de-toilette-lancome-perfume-feminino.html')).read()
         self.assertEqual(expected, crawler.extract_attributes(html))
+
+
+class TestArgParsing(unittest.TestCase):
+    """Tests for checking the correct parsing of the CLI arguments"""
+    def test_depth_0_output_testecsv_valid_url(self):
+        config = crawler.parse_args(['--depth', '0', '--output', 'teste.csv', 'http://www.valid.com'])
+        self.assertEqual(0, config.depth)
+        self.assertEqual('teste.csv', config.output)
+        self.assertEqual('http://www.valid.com', config.url)
