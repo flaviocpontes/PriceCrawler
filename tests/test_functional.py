@@ -15,7 +15,7 @@ class TestCrawlSinglePage(unittest.TestCase):
     """Tests the extranction of the page title, product name and URL from a single page."""
     def execute_command(self, page):
         command = [CRAWLER_EXECUTABLE, '-o', 'teste.csv', page]
-        subprocess.run(command)
+        subprocess.run(command, check=True)
 
     def load_result_csv(self):
         with open('teste.csv') as csvfile:
@@ -23,13 +23,14 @@ class TestCrawlSinglePage(unittest.TestCase):
             return [row for row in csvreader]
 
     def tearDown(self):
-        os.remove('teste.csv')
+        if os.path.exists('teste.csv'):
+            os.remove('teste.csv')
 
     def test_crawl_lady_million(self):
         target_page = 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'
         self.execute_command(target_page)
 
-        expected = [['Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino - 30ml',
+        expected = [['Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino',
                     'Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos',
                     target_page]]
 
@@ -44,3 +45,7 @@ class TestCrawlSinglePage(unittest.TestCase):
                     target_page]]
 
         self.assertEqual(expected, self.load_result_csv())
+
+    def test_invalid_url(self):
+        target_page = 'Invalid_url!'
+        self.assertRaises(subprocess.CalledProcessError, self.execute_command, target_page)

@@ -1,5 +1,6 @@
 import os
 import unittest
+import csv
 
 from tests import TEST_FILE_PATH
 from crawler import crawler
@@ -31,7 +32,26 @@ class TestArgParsing(unittest.TestCase):
         """URLS for domains other than http://www.epocacosmeticos.com.br/ should raise an exception"""
         self.assertRaises(ValueError, crawler.parse_args, ['invalid_url!'])
 
+
 class TestMainFunction(unittest.TestCase):
     """Tests the main funtion in a white box manner"""
+    def load_result_csv(self):
+        with open('teste.csv') as csvfile:
+            csvreader = csv.reader(csvfile)
+            return [row for row in csvreader]
+
     def test_crawl_lady_million(self):
-        crawler.main(['-o', 'teste.csv', 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'])
+        url = 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'
+        crawler.main(['-o', 'teste.csv', url])
+        expected = [['Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino',
+                     'Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos',
+                     url]]
+        self.assertEqual(expected, self.load_result_csv())
+
+    def test_crawl_hypnose(self):
+        url = 'http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-perfume-feminino/p'
+        crawler.main(['-o', 'teste.csv', url])
+        expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
+                    'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
+                    url]]
+        self.assertEqual(expected, self.load_result_csv())

@@ -8,6 +8,7 @@ import sys
 import csv
 import argparse
 import urllib.parse
+import urllib.request
 
 import lxml.html
 from lxml.cssselect import CSSSelector
@@ -38,18 +39,19 @@ def parse_args(args):
 
 
 def main(args):
-    config = parse_args(args)
+    try:
+        config = parse_args(args)
+    except ValueError as e:
+        print(e)
+        sys.exit(1)
 
     with open(config.output, 'w') as csvfile:
         writer = csv.writer(csvfile)
-        if config.url == 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p':
-            writer.writerow(["Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino - 30ml",
-                             "Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos",
-                             "http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p"])
-        else:
-            writer.writerow(["Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml",
-                             "Hypnôse Lancôme - Perfume Feminino - Época Cosméticos",
-                             "http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-perfume-feminino/p"])
+        html_page = urllib.request.urlopen(config.url).read()
+        result = extract_attributes(html_page)
+        writer.writerow([result.get('product_name'),
+                        result.get('page_title'),
+                        config.url])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
