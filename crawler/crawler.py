@@ -11,21 +11,49 @@ import urllib.parse
 import urllib.request
 
 import lxml.html
+import lxml
 from lxml.cssselect import CSSSelector
 
 
-def extract_product_name(elem_tree: lxml.etree):
+def extract_product_name(elem_tree):
+    """Extracts the Product name from the Product page
+
+    Args:
+        elem_tree: The Element tree representing the DOM
+
+    Returns:
+        str: The product name
+    """
     product_name_selector = CSSSelector('.productName')
     raw_text = product_name_selector(elem_tree)[0].text
     text = ' '.join([row.strip() for row in raw_text.split('\n')]).strip()
     return text
 
 
-def extract_attributes(html: str):
-    """"""
+def extract_page_title(element_tree):
+    """Extracts the page title
+
+    Agrs:
+        element_tree (lxml.etree.Element): The element
+
+    Returns:
+        str: The page title
+    """
+    return element_tree.xpath('head/title')[0].text
+
+
+def extract_values(html: str):
+    """Extracts the sought values from the product page
+
+    Args:
+        html (str): The html document
+
+    Returns:
+        dict: The extracted page title and product name
+    """
     element_tree = lxml.html.document_fromstring(html)
     return {'product_name': extract_product_name(element_tree),
-            'page_title': element_tree.xpath('head/title')[0].text}
+            'page_title': extract_page_title(element_tree)}
 
 
 def parse_args(args):
@@ -48,7 +76,7 @@ def main(args):
     with open(config.output, 'w') as csvfile:
         writer = csv.writer(csvfile)
         html_page = urllib.request.urlopen(config.url).read()
-        result = extract_attributes(html_page)
+        result = extract_values(html_page)
         writer.writerow([result.get('product_name'),
                         result.get('page_title'),
                         config.url])
