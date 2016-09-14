@@ -33,6 +33,13 @@ class TestArgParsing(unittest.TestCase):
         self.assertRaises(ValueError, crawler.parse_args, ['invalid_url!'])
 
 
+class TextExtractLinks(unittest.TestCase):
+    """Tests the link extranction from the pages"""
+    def test_links_from_home(self):
+        home_page = open(os.path.join(TEST_FILE_PATH, 'hypnose-eau-de-toilette-lancome-perfume-feminino.html')).read()
+        self.assertEqual(263, len(crawler.extract_links(home_page)))
+
+
 class TestMainFunction(unittest.TestCase):
     """Tests the main funtion in a white box manner"""
     def load_result_csv(self):

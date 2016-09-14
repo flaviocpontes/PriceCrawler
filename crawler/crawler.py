@@ -83,3 +83,7 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
+
+
+def extract_links(home_page):
+    return None
