@@ -34,10 +34,14 @@ class TestArgParsing(unittest.TestCase):
 
 
 class TextExtractLinks(unittest.TestCase):
-    """Tests the link extranction from the pages"""
+    """Tests the link extraction from the pages"""
     def test_links_from_home(self):
-        home_page = open(os.path.join(TEST_FILE_PATH, 'hypnose-eau-de-toilette-lancome-perfume-feminino.html')).read()
+        home_page = open(os.path.join(TEST_FILE_PATH, 'home_page.html')).read()
         self.assertEqual(263, len(crawler.extract_links(home_page)))
+
+    def test_links_hypnose(self):
+        home_page = open(os.path.join(TEST_FILE_PATH, 'hypnose-eau-de-toilette-lancome-perfume-feminino.html')).read()
+        self.assertEqual(116, len(crawler.extract_links(home_page)))
 
 
 class TestMainFunction(unittest.TestCase):

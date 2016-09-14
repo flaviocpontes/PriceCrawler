@@ -56,6 +56,20 @@ def extract_values(html: str):
             'page_title': extract_page_title(element_tree)}
 
 
+def extract_links(html: str):
+    """Extract the links in the html page that are pointed to the same domain
+
+    Args:
+        html (str): The HTMl documento for parsing
+
+    Returns:
+        Set: A set containing all the links in the html page.
+    """
+    element_tree = lxml.html.document_fromstring(html)
+    return {link.get('href') for link in element_tree.cssselect('a')
+            if link.get('href') and link.get('href').startswith('http://www.epocacosmeticos.com.br')}
+
+
 def parse_args(args):
     parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
     parser.add_argument('-o', '--output', type=str, help='The output csv file')
@@ -83,7 +97,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-
-
-def extract_links(home_page):
-    return None
