@@ -71,6 +71,16 @@ def extract_links(html: str):
 
 
 def is_product_page(url):
+    """Returns True if a page is a Product Page
+
+        Args:
+            url (str): The url to be evaluated
+
+        Returns:
+            bool: If the URK is for a product page.
+        """
+    if url.endswith('/p'):
+        return True
     return False
 
 
