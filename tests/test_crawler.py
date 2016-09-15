@@ -26,6 +26,12 @@ class TestIsProductPage(unittest.TestCase):
     def test_is_product_page(self):
         self.assertTrue(crawler.is_product_page('http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'))
 
+    def test_is_not_product_page(self):
+        self.assertFalse(crawler.is_product_page('http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino'))
+
+    def test_invalid_value(self):
+        self.assertRaises(ValueError, crawler.is_product_page, 123)
+
 
 class TestArgParsing(unittest.TestCase):
     """Tests for checking the correct parsing of the CLI arguments"""
