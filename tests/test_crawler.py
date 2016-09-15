@@ -21,6 +21,12 @@ class TestExtraction(unittest.TestCase):
         self.assertEqual(expected, crawler.extract_values(html))
 
 
+class TestIsProductPage(unittest.TestCase):
+    """Tests for checking if a page is a prodcutd page"""
+    def test_is_product_page(self):
+        self.assertTrue(crawler.is_product_page('http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'))
+
+
 class TestArgParsing(unittest.TestCase):
     """Tests for checking the correct parsing of the CLI arguments"""
     def test_depth_0_output_testecsv_valid_url(self):

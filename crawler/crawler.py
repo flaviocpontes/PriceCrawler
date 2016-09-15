@@ -70,6 +70,10 @@ def extract_links(html: str):
             if link.get('href') and link.get('href').startswith('http://www.epocacosmeticos.com.br')}
 
 
+def is_product_page(url):
+    return False
+
+
 def parse_args(args):
     parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
     parser.add_argument('-o', '--output', type=str, help='The output csv file')
