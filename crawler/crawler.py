@@ -79,6 +79,8 @@ def is_product_page(url):
         Returns:
             bool: If the URK is for a product page.
         """
+    if type(url) != str:
+        raise ValueError("url must be a string")
     if url.endswith('/p'):
         return True
     return False
