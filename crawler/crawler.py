@@ -87,13 +87,25 @@ def is_product_page(url):
 
 
 def parse_args(args):
+    """Parses the command line arguments
+
+    Args:
+        args (list): the list of cli arguments. /doesn't include the executable.
+
+    Returns:
+        argparse.namespace
+
+    """
     parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
-    parser.add_argument('-d', '--depth', type=str, help='The maximum link depth to crawl')
+    parser.add_argument('-d', '--depth', default=1, type=int, help='The maximum link depth to crawl. Must be greater than 0.')
     parser.add_argument('-o', '--output', type=str, help='The output csv file')
     parser.add_argument('url', help='The base url for the crawling session')
     config = parser.parse_args(args)
     if urllib.parse.urlparse(config.url).netloc != 'www.epocacosmeticos.com.br' :
         raise ValueError('URL must be from the www.epocacosmeticos.com.br domain')
+    if config.depth < 1:
+        print('Depth must be an integer greater than 0. Setting depth to 1.')
+        config.depth = 1
     return config
 
 
@@ -104,13 +116,27 @@ def main(args):
         print(e)
         sys.exit(1)
 
-    with open(config.output, 'w') as csvfile:
-        writer = csv.writer(csvfile)
-        html_page = urllib.request.urlopen(config.url).read()
-        result = extract_values(html_page)
-        writer.writerow([result.get('product_name'),
-                        result.get('page_title'),
-                        config.url])
+    visited = []
+    horizon = [config.url]
+    open(config.output, 'w').close()
+
+    for i in range(config.depth):
+        for n, url in enumerate(horizon):
+            if url in visited:
+                horizon.pop(n)
+                continue
+            html_page = urllib.request.urlopen(config.url).read()
+            values = []
+            if is_product_page(url):
+                values = extract_values(html_page)
+            visited.append(horizon.pop(n))
+            horizon.extend(list(extract_links(html_page)))
+            if values:
+                with open(config.output, 'a+') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow([values.get('product_name'),
+                                     values.get('page_title'),
+                                     url])
 
 if __name__ == '__main__':
     main(sys.argv[1:])

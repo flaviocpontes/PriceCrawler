@@ -58,6 +58,10 @@ class TextExtractLinks(unittest.TestCase):
 
 class TestMainFunction(unittest.TestCase):
     """Tests the main funtion in a white box manner"""
+    def setUp(self):
+        if os.path.exists('teste.csv'):
+            os.remove('teste.csv')
+
     def load_result_csv(self):
         with open('teste.csv') as csvfile:
             csvreader = csv.reader(csvfile)
@@ -82,7 +86,11 @@ class TestMainFunction(unittest.TestCase):
     def test_crawl_home_page_depth_0(self):
         url = 'http://www.epocacosmeticos.com.br/'
         crawler.main(['-d', '0', '-o', 'teste.csv', url])
-        expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
-                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
-                     url]]
+        expected = []
+        self.assertEqual(expected, self.load_result_csv())
+
+    def test_crawl_home_page_depth_1(self):
+        url = 'http://www.epocacosmeticos.com.br/'
+        crawler.main(['-d', '2', '-o', 'teste.csv', url])
+        expected = []
         self.assertEqual(expected, self.load_result_csv())

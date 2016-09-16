@@ -11,10 +11,10 @@ from tests import CRAWLER_PATH
 CRAWLER_EXECUTABLE = os.path.join(CRAWLER_PATH, 'crawler.py')
 
 
-class TestCrawlSinglePage(unittest.TestCase):
+class TestCrawler(unittest.TestCase):
     """Tests the extranction of the page title, product name and URL from a single page."""
-    def execute_command(self, page):
-        command = [CRAWLER_EXECUTABLE, '-o', 'teste.csv', page]
+    def execute_command(self, page, depth=1):
+        command = [CRAWLER_EXECUTABLE, '-d', depth,  '-o', 'teste.csv', page]
         subprocess.run(command, check=True)
 
     def load_result_csv(self):
