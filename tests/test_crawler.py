@@ -65,7 +65,7 @@ class TestMainFunction(unittest.TestCase):
 
     def test_crawl_lady_million(self):
         url = 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'
-        crawler.main(['-o', 'teste.csv', url])
+        crawler.main(['-d', '0', '-o', 'teste.csv', url])
         expected = [['Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino',
                      'Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos',
                      url]]
@@ -73,8 +73,16 @@ class TestMainFunction(unittest.TestCase):
 
     def test_crawl_hypnose(self):
         url = 'http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-perfume-feminino/p'
-        crawler.main(['-o', 'teste.csv', url])
+        crawler.main(['-d', '0', '-o', 'teste.csv', url])
         expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
                     url]]
+        self.assertEqual(expected, self.load_result_csv())
+
+    def test_crawl_home_page_depth_0(self):
+        url = 'http://www.epocacosmeticos.com.br/'
+        crawler.main(['-d', '0', '-o', 'teste.csv', url])
+        expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
+                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
+                     url]]
         self.assertEqual(expected, self.load_result_csv())

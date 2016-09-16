@@ -77,7 +77,7 @@ def is_product_page(url):
             url (str): The url to be evaluated
 
         Returns:
-            bool: If the URK is for a product page.
+            bool: If the URL is for a product page.
         """
     if type(url) != str:
         raise ValueError("url must be a string")
@@ -88,6 +88,7 @@ def is_product_page(url):
 
 def parse_args(args):
     parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
+    parser.add_argument('-d', '--depth', type=str, help='The maximum link depth to crawl')
     parser.add_argument('-o', '--output', type=str, help='The output csv file')
     parser.add_argument('url', help='The base url for the crawling session')
     config = parser.parse_args(args)
