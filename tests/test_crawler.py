@@ -93,4 +93,4 @@ class TestMainFunction(unittest.TestCase):
         url = 'http://www.epocacosmeticos.com.br/'
         crawler.main(['-d', '2', '-o', 'teste.csv', url])
         expected = []
-        self.assertEqual(expected, self.load_result_csv())
+        self.assertLess(30, len(self.load_result_csv()))

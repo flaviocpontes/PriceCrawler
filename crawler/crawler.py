@@ -4,6 +4,7 @@
 This package is a crawler for extracting the product's name, page title and page's URL from the product pages on the
 http://www.epocacosmeticos.com.br and is meant as a technical challenge for the admission process at SIVIE.
 """
+import os
 import sys
 import csv
 import argparse
@@ -78,7 +79,7 @@ def is_product_page(url):
 
         Returns:
             bool: If the URL is for a product page.
-        """
+    """
     if type(url) != str:
         raise ValueError("url must be a string")
     if url.endswith('/p'):
@@ -94,7 +95,6 @@ def parse_args(args):
 
     Returns:
         argparse.namespace
-
     """
     parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
     parser.add_argument('-d', '--depth', default=1, type=int, help='The maximum link depth to crawl. Must be greater than 0.')
@@ -109,6 +109,18 @@ def parse_args(args):
     return config
 
 
+def write_values_to_csv(output, values):
+    """Writes the values extracted from the product page to the csv file
+
+    Args:
+        output (str): The output filename
+        values (list): The list of values to be written to the csv.
+    """
+    with open(output, 'a+') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(values)
+
+
 def main(args):
     try:
         config = parse_args(args)
@@ -121,22 +133,25 @@ def main(args):
     open(config.output, 'w').close()
 
     for i in range(config.depth):
-        for n, url in enumerate(horizon):
+        iteration_horizon = horizon.copy()
+        horizon = []
+        for n, url in enumerate(iteration_horizon):
             if url in visited:
-                horizon.pop(n)
+                iteration_horizon.pop()
                 continue
-            html_page = urllib.request.urlopen(config.url).read()
+            print('Visiting url: {}'.format(url))
+            html_page = urllib.request.urlopen(url).read()
+            visited.append(iteration_horizon.pop())
             values = []
             if is_product_page(url):
+                print('Product page found')
                 values = extract_values(html_page)
-            visited.append(horizon.pop(n))
+                print('extracted values: {}'.format(values))
             horizon.extend(list(extract_links(html_page)))
             if values:
-                with open(config.output, 'a+') as csvfile:
-                    writer = csv.writer(csvfile)
-                    writer.writerow([values.get('product_name'),
-                                     values.get('page_title'),
-                                     url])
+                write_values_to_csv(config.output, [values.get('product_name'),
+                                                    values.get('page_title'),
+                                                    url])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
