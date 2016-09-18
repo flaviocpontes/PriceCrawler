@@ -1,9 +1,9 @@
+import csv
 import os
 import unittest
-import csv
 
+import crawler
 from tests import TEST_FILE_PATH
-from crawler import crawler
 
 
 class TestExtraction(unittest.TestCase):

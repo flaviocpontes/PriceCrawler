@@ -15,6 +15,14 @@ import lxml.html
 import lxml
 from lxml.cssselect import CSSSelector
 
+__author_name__ = 'Flávio Pontes'
+__author_email__ = 'flaviocpontes@gmail.com'
+__author__ = '{} <{}>'.format(__author_name__, __author_email__)
+__copyright__ = 'Copyright © 2016 Flávio Pontes'
+__license__ = 'MIT'
+__version_info__ = (0, 1, 'alpha')
+__version__ = '.'.join(map(str, __version_info__))
+
 
 def extract_product_name(elem_tree):
     """Extracts the Product name from the Product page
@@ -31,18 +39,6 @@ def extract_product_name(elem_tree):
     return text
 
 
-def extract_page_title(element_tree):
-    """Extracts the page title
-
-    Agrs:
-        element_tree (lxml.etree.Element): The element
-
-    Returns:
-        str: The page title
-    """
-    return element_tree.xpath('head/title')[0].text
-
-
 def extract_values(html: str):
     """Extracts the sought values from the product page
 
@@ -54,7 +50,7 @@ def extract_values(html: str):
     """
     element_tree = lxml.html.document_fromstring(html)
     return {'product_name': extract_product_name(element_tree),
-            'page_title': extract_page_title(element_tree)}
+            'page_title': element_tree.xpath('head/title')[0].text}
 
 
 def extract_links(html: str):
@@ -67,8 +63,8 @@ def extract_links(html: str):
         Set: A set containing all the links in the html page.
     """
     element_tree = lxml.html.document_fromstring(html)
-    return {link.get('href') for link in element_tree.cssselect('a')
-            if link.get('href') and link.get('href').startswith('http://www.epocacosmeticos.com.br')}
+    return list({link.get('href') for link in element_tree.cssselect('a')
+            if link.get('href') and link.get('href').startswith('http://www.epocacosmeticos.com.br')})
 
 
 def is_product_page(url):
@@ -116,9 +112,29 @@ def write_values_to_csv(output, values):
         output (str): The output filename
         values (list): The list of values to be written to the csv.
     """
-    with open(output, 'a+') as csvfile:
+    with open(output, 'a') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(values)
+
+
+def get_page_contents(url):
+    """Wrapper function to urllib request.
+    For easier mocking and better readability
+
+    Args:
+        url(str): url to get contents from
+
+    Returns:
+        str: The page's HTML content
+    """
+    print('Visiting url: {}'.format(url))
+    return urllib.request.urlopen(url).read()
+
+
+def visit_url(url):
+    html_page = get_page_contents(url)
+    values = extract_values(html_page) if is_product_page(url) else None
+    return values, extract_links(html_page)
 
 
 def main(args):
@@ -130,25 +146,21 @@ def main(args):
 
     visited = []
     horizon = [config.url]
-    open(config.output, 'w').close()
+    if not os.path.exists(config.output):
+        open(config.output, 'w').close()
 
     for i in range(config.depth):
         iteration_horizon = horizon.copy()
         horizon = []
-        for n, url in enumerate(iteration_horizon):
+        for url in iteration_horizon:
             if url in visited:
                 iteration_horizon.pop()
                 continue
-            print('Visiting url: {}'.format(url))
-            html_page = urllib.request.urlopen(url).read()
+            values, links = visit_url(url)
             visited.append(iteration_horizon.pop())
-            values = []
-            if is_product_page(url):
-                print('Product page found')
-                values = extract_values(html_page)
-                print('extracted values: {}'.format(values))
-            horizon.extend(list(extract_links(html_page)))
+            horizon.extend(links)
             if values:
+                print('Product page found. Extracted {}'.format(values))
                 write_values_to_csv(config.output, [values.get('product_name'),
                                                     values.get('page_title'),
                                                     url])
