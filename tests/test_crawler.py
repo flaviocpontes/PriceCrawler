@@ -20,6 +20,17 @@ class TestExtraction(unittest.TestCase):
         html = open(os.path.join(TEST_FILE_PATH, 'hypnose-eau-de-toilette-lancome-perfume-feminino.html')).read()
         self.assertEqual(expected, crawler.extract_values(html))
 
+    def test_extraction_from_synthetic_page(self):
+        """Tests a synthetic page for value extraction"""
+        expected = {'product_name': 'Fake Product 1',
+                    'page_title': 'My first Fake Product'}
+        fake_html = open(os.path.join(TEST_FILE_PATH, 'fake_product.html')).read()
+        self.assertEqual(expected, crawler.extract_values(fake_html.format('My first Fake Product',
+                                                                           'Fake Product 1',
+                                                                           'page1/p',
+                                                                           'page2/p',
+                                                                           'page3/p')))
+
 
 class TestIsProductPage(unittest.TestCase):
     """Tests for checking if a page is a prodcutd page"""
@@ -28,6 +39,9 @@ class TestIsProductPage(unittest.TestCase):
 
     def test_is_not_product_page(self):
         self.assertFalse(crawler.is_product_page('http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino'))
+
+    def test_fake_url(self):
+        self.assertTrue(crawler.is_product_page('http://www.epocacosmeticos.com.br/fake-product/p'))
 
     def test_invalid_value(self):
         self.assertRaises(ValueError, crawler.is_product_page, 123)
