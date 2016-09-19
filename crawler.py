@@ -154,10 +154,10 @@ def main(args):
         horizon = []
         for url in iteration_horizon:
             if url in visited:
-                iteration_horizon.pop(0)
+                iteration_horizon[0]
                 continue
             values, links = visit_url(url)
-            visited.append(iteration_horizon.pop(0))
+            visited.append(iteration_horizon[0])
             horizon.extend(links)
             if values:
                 print('Product page found. Extracted {}'.format(values))
