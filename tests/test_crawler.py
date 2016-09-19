@@ -162,9 +162,9 @@ class TestMainFunction(unittest.TestCase):
     def test_crawl_mock_pages_mixed_with_repetitions(self):
         mock_params = {
             '/pagina_inicial': ('Pagina Inicial', 'Produto Inicial', 'produto_1/p', 'pagina_2', 'produto_3/p'),
-            '/produto_1/p': ('Pagina Produto 1', 'Produto 1', '/produto_3/p', 'pagina_5', 'pagina_6'),
+            '/produto_1/p': ('Pagina Produto 1', 'Produto 1', 'produto_3/p', 'pagina_5', 'pagina_6'),
             '/pagina_2': ('Pagina 2', 'Página 2', 'produto_1/p', 'pagina_5', 'produto_3/p'),
-            '/produto_3/p': ('Pagina Produto 3', 'Produto 3', '/produto_1/p', 'pagina_5', 'pagina_6'),
+            '/produto_3/p': ('Pagina Produto 3', 'Produto 3', 'produto_1/p', 'pagina_5', 'pagina_6'),
             '/pagina_5': ('Pagina 5', 'Página 2', 'produto_1/p', 'pagina_5', 'produto_3/p'),
             '/pagina_6': ('Pagina 6', 'Página 2', 'produto_1/p', 'pagina_5', 'produto_3/p'),
         }

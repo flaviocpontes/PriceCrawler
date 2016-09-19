@@ -152,12 +152,11 @@ def main(args):
     for i in range(config.depth):
         iteration_horizon = horizon.copy()
         horizon = []
-        for url in iteration_horizon:
+        for n, url in enumerate(iteration_horizon):
             if url in visited:
-                iteration_horizon[0]
                 continue
             values, links = visit_url(url)
-            visited.append(iteration_horizon[0])
+            visited.append(iteration_horizon[n])
             horizon.extend(links)
             if values:
                 print('Product page found. Extracted {}'.format(values))
