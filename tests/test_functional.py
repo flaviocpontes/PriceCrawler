@@ -7,8 +7,8 @@ import os
 import subprocess
 import csv
 
-from tests import CRAWLER_PATH
-CRAWLER_EXECUTABLE = os.path.join(CRAWLER_PATH, 'crawler.py')
+from tests import PROJECT_ROOT
+CRAWLER_EXECUTABLE = os.path.join(PROJECT_ROOT, 'crawler.py')
 
 
 class TestCrawler(unittest.TestCase):
@@ -36,9 +36,29 @@ class TestCrawler(unittest.TestCase):
 
         self.assertEqual(expected, self.load_result_csv())
 
+    def test_crawl_lady_million_depth_2(self):
+        target_page = 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'
+        self.execute_command(target_page, 2)
+
+        expected = [['Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino',
+                    'Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos',
+                    target_page]]
+
+        self.assertEqual(expected, self.load_result_csv())
+
     def test_crawl_hypnose(self):
         target_page = 'http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-perfume-feminino/p'
         self.execute_command(target_page)
+
+        expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
+                    'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
+                    target_page]]
+
+        self.assertEqual(expected, self.load_result_csv())
+
+    def test_crawl_hypnose_depth_2(self):
+        target_page = 'http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-perfume-feminino/p'
+        self.execute_command(target_page, 2)
 
         expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
