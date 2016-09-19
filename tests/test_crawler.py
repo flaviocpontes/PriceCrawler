@@ -129,7 +129,7 @@ class TestMainFunction(unittest.TestCase):
         mock_params = {'/produto_inicial/p': ('Pagina Inicial', 'Produto Inicial', 'produto_1/p', 'produto_2/p', 'produto_3/p'),
                        '/produto_1/p': ('Pagina Produto 1', 'Produto 1', 'produto_4/p', 'produto_5/p', 'produto_6/p'),
                        '/produto_2/p': ('Pagina Produto 2', 'Produto 2', 'produto_7/p', 'produto_8/p', 'produto_9/p'),
-                       '/produto_3/p': ('Pagina Produto 3', 'Produto 3', 'produto_7/p', 'produto_8/p', 'produto_9/p')}
+                       '/produto_3/p': ('Pagina Produto 3', 'Produto 3', 'produto_10/p', 'produto_11/p', 'produto_12/p')}
         with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
             crawler.main(['-d', '2', '-o', 'teste.csv', self.base_url + 'produto_inicial/p'])
         expected = [['Produto Inicial', 'Pagina Inicial', self.base_url + 'produto_inicial/p'],
@@ -137,3 +137,41 @@ class TestMainFunction(unittest.TestCase):
                     ['Produto 2', 'Pagina Produto 2', self.base_url + 'produto_2/p'],
                     ['Produto 3', 'Pagina Produto 3', self.base_url + 'produto_3/p']]
         self.assertEqual(expected, self.load_result_csv())
+
+    def test_crawl_mock_pages_no_product(self):
+        mock_params = {'/pagina_inicial': ('Pagina Inicial', 'Produto Inicial', 'pagina_1', 'pagina_2', 'pagina_3'),
+                       '/pagina_1': ('Pagina Produto 1', 'Produto 1', 'pagina_4', 'pagina_5', 'pagina_6'),
+                       '/pagina_2': ('Pagina Produto 2', 'Produto 2', 'pagina_7', 'pagina_8', 'pagina_9'),
+                       '/pagina_3': ('Pagina Produto 3', 'Produto 3', 'pagina_10', 'pagina_11', 'pagina_12')}
+        with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
+            crawler.main(['-d', '2', '-o', 'teste.csv', self.base_url + 'pagina_inicial'])
+        expected = []
+        self.assertEqual(expected, self.load_result_csv())
+
+    def test_crawl_mock_pages_mixed_no_repetitions(self):
+        mock_params = {'/pagina_inicial': ('Pagina Inicial', 'Produto Inicial', 'produto_1/p', 'pagina_2', 'produto_3/p'),
+                       '/produto_1/p': ('Pagina Produto 1', 'Produto 1', 'pagina_4', 'pagina_5', 'pagina_6'),
+                       '/pagina_2': ('Pagina 2', 'Página 2', 'pagina_7', 'pagina_8', 'pagina_9'),
+                       '/produto_3/p': ('Pagina Produto 3', 'Produto 3', 'pagina_10', 'pagina_11', 'pagina_12')}
+        with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
+            crawler.main(['-d', '2', '-o', 'teste.csv', self.base_url + 'pagina_inicial'])
+        expected = [['Produto 1', 'Pagina Produto 1', self.base_url + 'produto_1/p'],
+                    ['Produto 3', 'Pagina Produto 3', self.base_url + 'produto_3/p']]
+        self.assertEqual(expected, self.load_result_csv())
+
+    def test_crawl_mock_pages_mixed_with_repetitions(self):
+        mock_params = {
+            '/pagina_inicial': ('Pagina Inicial', 'Produto Inicial', 'produto_1/p', 'pagina_2', 'produto_3/p'),
+            '/produto_1/p': ('Pagina Produto 1', 'Produto 1', '/produto_3/p', 'pagina_5', 'pagina_6'),
+            '/pagina_2': ('Pagina 2', 'Página 2', 'produto_1/p', 'pagina_5', 'produto_3/p'),
+            '/produto_3/p': ('Pagina Produto 3', 'Produto 3', '/produto_1/p', 'pagina_5', 'pagina_6'),
+            '/pagina_5': ('Pagina 5', 'Página 2', 'produto_1/p', 'pagina_5', 'produto_3/p'),
+            '/pagina_6': ('Pagina 6', 'Página 2', 'produto_1/p', 'pagina_5', 'produto_3/p'),
+        }
+        with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
+            crawler.main(['-d', '3', '-o', 'teste.csv', self.base_url + 'pagina_inicial'])
+        expected = [['Produto 1', 'Pagina Produto 1', self.base_url + 'produto_1/p'],
+                    ['Produto 3', 'Pagina Produto 3', self.base_url + 'produto_3/p']]
+        self.assertEqual(expected, self.load_result_csv())
+
+
