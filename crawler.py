@@ -53,6 +53,12 @@ def extract_values(html: str):
             'page_title': element_tree.xpath('head/title')[0].text}
 
 
+def sanitize_url(param):
+    """Sanitizes the path portion of the URL for non ascii characters"""
+
+    pass
+
+
 def extract_links(html: str):
     """Extract the links in the html page that are pointed to the same domain
 
@@ -63,8 +69,9 @@ def extract_links(html: str):
         Set: A set containing all the links in the html page that are from the epocacosmeticos.com.br domain.
     """
     element_tree = lxml.html.document_fromstring(html)
-    return sorted(list({link.get('href') for link in element_tree.cssselect('a')
-                        if link.get('href') and link.get('href').startswith('http://www.epocacosmeticos.com.br')}))
+    link_set = {link.get('href') for link in element_tree.cssselect('a')
+                if link.get('href') and link.get('href').startswith('http://www.epocacosmeticos.com.br')}
+    return sorted(list(link_set))
 
 
 def is_product_page(url):

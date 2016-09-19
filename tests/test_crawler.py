@@ -123,7 +123,16 @@ class TestMainFunction(unittest.TestCase):
 
     def test_crawl_home_page_depth_2(self):
         crawler.main(['-d', '2', '-o', 'teste.csv', self.base_url])
-        self.assertLess(30, len(self.load_result_csv()))
+        self.assertEqual(83, len(self.load_result_csv()))
+
+    def test_crawl_home_page_depth_3(self):
+        crawler.main(['-d', '3', '-o', 'teste.csv', self.base_url])
+        self.assertEqual(83, len(self.load_result_csv()))
+
+    def test_crawl_sem_malformed_url(self):
+        url = 'http://www.epocacosmeticos.com.br/cabelos/coloracao/tintura-para-cabelos/Sem Amônia'
+        crawler.main(['-d', '1', '-o', 'teste.csv', url])
+        self.assertEqual(0, len(self.load_result_csv()))
 
     def test_crawl_mock_pages_all_products_no_repetitions(self):
         mock_params = {'/produto_inicial/p': ('Pagina Inicial', 'Produto Inicial', 'produto_1/p', 'produto_2/p', 'produto_3/p'),
