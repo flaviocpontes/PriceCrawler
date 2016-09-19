@@ -57,14 +57,14 @@ def extract_links(html: str):
     """Extract the links in the html page that are pointed to the same domain
 
     Args:
-        html (str): The HTMl documento for parsing
+        html (str): The HTMls documento for parsing
 
     Returns:
-        Set: A set containing all the links in the html page.
+        Set: A set containing all the links in the html page that are from the epocacosmeticos.com.br domain.
     """
     element_tree = lxml.html.document_fromstring(html)
-    return list({link.get('href') for link in element_tree.cssselect('a')
-            if link.get('href') and link.get('href').startswith('http://www.epocacosmeticos.com.br')})
+    return sorted(list({link.get('href') for link in element_tree.cssselect('a')
+                        if link.get('href') and link.get('href').startswith('http://www.epocacosmeticos.com.br')}))
 
 
 def is_product_page(url):
@@ -154,10 +154,10 @@ def main(args):
         horizon = []
         for url in iteration_horizon:
             if url in visited:
-                iteration_horizon.pop()
+                iteration_horizon.pop(0)
                 continue
             values, links = visit_url(url)
-            visited.append(iteration_horizon.pop())
+            visited.append(iteration_horizon.pop(0))
             horizon.extend(links)
             if values:
                 print('Product page found. Extracted {}'.format(values))

@@ -1,9 +1,24 @@
 import csv
 import os
 import unittest
+from unittest.mock import Mock, patch
+from urllib.parse import urlparse
 
 import crawler
 from tests import TEST_FILE_PATH
+
+
+class MockPageGenerator:
+    """Generates the mock Web Pages for the tests based on the url path key"""
+    def __init__(self, par_by_path):
+        if not par_by_path and not type(par_by_path) == dict:
+            raise AttributeError('Must be initialized with a parameter dict')
+        self.par_by_path = par_by_path
+        self.mock_page = open(os.path.join(TEST_FILE_PATH, 'mock_page.html')).read()
+
+    def __call__(self, url):
+        path = urlparse(url).path
+        return self.mock_page.format(*self.par_by_path.get(path, ['Empty' for n in range(5)]))
 
 
 class TestExtraction(unittest.TestCase):
@@ -24,7 +39,7 @@ class TestExtraction(unittest.TestCase):
         """Tests a synthetic page for value extraction"""
         expected = {'product_name': 'Fake Product 1',
                     'page_title': 'My first Fake Product'}
-        fake_html = open(os.path.join(TEST_FILE_PATH, 'fake_product.html')).read()
+        fake_html = open(os.path.join(TEST_FILE_PATH, 'mock_page.html')).read()
         self.assertEqual(expected, crawler.extract_values(fake_html.format('My first Fake Product',
                                                                            'Fake Product 1',
                                                                            'page1/p',
@@ -72,6 +87,10 @@ class TextExtractLinks(unittest.TestCase):
 
 class TestMainFunction(unittest.TestCase):
     """Tests the main funtion in a white box manner"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.base_url = 'http://www.epocacosmeticos.com.br/'
+
     def setUp(self):
         if os.path.exists('teste.csv'):
             os.remove('teste.csv')
@@ -82,7 +101,7 @@ class TestMainFunction(unittest.TestCase):
             return [row for row in csvreader]
 
     def test_crawl_lady_million(self):
-        url = 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'
+        url = self.base_url + 'lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'
         crawler.main(['-d', '0', '-o', 'teste.csv', url])
         expected = [['Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino',
                      'Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos',
@@ -90,7 +109,7 @@ class TestMainFunction(unittest.TestCase):
         self.assertEqual(expected, self.load_result_csv())
 
     def test_crawl_hypnose(self):
-        url = 'http://www.epocacosmeticos.com.br/hypnose-eau-de-toilette-lancome-perfume-feminino/p'
+        url = self.base_url + 'hypnose-eau-de-toilette-lancome-perfume-feminino/p'
         crawler.main(['-d', '0', '-o', 'teste.csv', url])
         expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
@@ -98,13 +117,23 @@ class TestMainFunction(unittest.TestCase):
         self.assertEqual(expected, self.load_result_csv())
 
     def test_crawl_home_page_depth_0(self):
-        url = 'http://www.epocacosmeticos.com.br/'
-        crawler.main(['-d', '0', '-o', 'teste.csv', url])
+        crawler.main(['-d', '0', '-o', 'teste.csv', self.base_url])
         expected = []
         self.assertEqual(expected, self.load_result_csv())
 
     def test_crawl_home_page_depth_1(self):
-        url = 'http://www.epocacosmeticos.com.br/'
-        crawler.main(['-d', '2', '-o', 'teste.csv', url])
-        expected = []
+        crawler.main(['-d', '2', '-o', 'teste.csv', self.base_url])
         self.assertLess(30, len(self.load_result_csv()))
+
+    def test_crawl_mock_pages_all_products_no_repetitions(self):
+        mock_params = {'/produto_inicial/p': ('Pagina Inicial', 'Produto Inicial', 'produto_1/p', 'produto_2/p', 'produto_3/p'),
+                       '/produto_1/p': ('Pagina Produto 1', 'Produto 1', 'produto_4/p', 'produto_5/p', 'produto_6/p'),
+                       '/produto_2/p': ('Pagina Produto 2', 'Produto 2', 'produto_7/p', 'produto_8/p', 'produto_9/p'),
+                       '/produto_3/p': ('Pagina Produto 3', 'Produto 3', 'produto_7/p', 'produto_8/p', 'produto_9/p')}
+        with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
+            crawler.main(['-d', '2', '-o', 'teste.csv', self.base_url + 'produto_inicial/p'])
+        expected = [['Produto Inicial', 'Pagina Inicial', self.base_url + 'produto_inicial/p'],
+                    ['Produto 1', 'Pagina Produto 1', self.base_url + 'produto_1/p'],
+                    ['Produto 2', 'Pagina Produto 2', self.base_url + 'produto_2/p'],
+                    ['Produto 3', 'Pagina Produto 3', self.base_url + 'produto_3/p']]
+        self.assertEqual(expected, self.load_result_csv())
