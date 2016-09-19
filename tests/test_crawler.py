@@ -129,7 +129,7 @@ class TestMainFunction(unittest.TestCase):
         crawler.main(['-d', '3', '-o', 'teste.csv', self.base_url])
         self.assertEqual(83, len(self.load_result_csv()))
 
-    def test_crawl_sem_malformed_url(self):
+    def test_crawl_malformed_url(self):
         url = 'http://www.epocacosmeticos.com.br/cabelos/coloracao/tintura-para-cabelos/Sem Amônia'
         crawler.main(['-d', '1', '-o', 'teste.csv', url])
         self.assertEqual(0, len(self.load_result_csv()))

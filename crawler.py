@@ -13,6 +13,7 @@ import urllib.request
 
 import lxml.html
 import lxml
+import requests
 from lxml.cssselect import CSSSelector
 
 __author_name__ = 'Flávio Pontes'
@@ -135,7 +136,7 @@ def get_page_contents(url):
         str: The page's HTML content
     """
     print('Visiting url: {}'.format(url))
-    return urllib.request.urlopen(url).read()
+    return requests.get(url).text
 
 
 def visit_url(url):
