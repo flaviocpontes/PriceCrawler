@@ -102,7 +102,7 @@ class TestMainFunction(unittest.TestCase):
 
     def test_crawl_lady_million(self):
         url = self.base_url + 'lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'
-        crawler.main(['-d', '0', '-o', 'teste.csv', url])
+        crawler.main(['-d', '1', '-o', 'teste.csv', url])
         expected = [['Lady Million Eau my Gold Eau de Toilette Paco Rabanne - Perfume Feminino',
                      'Perfume Lady Million Eau my Gold EDT Paco Rabanne Feminino - Época Cosméticos',
                      url]]
@@ -110,18 +110,18 @@ class TestMainFunction(unittest.TestCase):
 
     def test_crawl_hypnose(self):
         url = self.base_url + 'hypnose-eau-de-toilette-lancome-perfume-feminino/p'
-        crawler.main(['-d', '0', '-o', 'teste.csv', url])
+        crawler.main(['-d', '1', '-o', 'teste.csv', url])
         expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
                     url]]
         self.assertEqual(expected, self.load_result_csv())
 
-    def test_crawl_home_page_depth_0(self):
-        crawler.main(['-d', '0', '-o', 'teste.csv', self.base_url])
+    def test_crawl_home_page_depth_1(self):
+        crawler.main(['-d', '1', '-o', 'teste.csv', self.base_url])
         expected = []
         self.assertEqual(expected, self.load_result_csv())
 
-    def test_crawl_home_page_depth_1(self):
+    def test_crawl_home_page_depth_2(self):
         crawler.main(['-d', '2', '-o', 'teste.csv', self.base_url])
         self.assertLess(30, len(self.load_result_csv()))
 
