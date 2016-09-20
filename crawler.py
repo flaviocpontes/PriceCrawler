@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This package is a crawler for extracting the product's name, page title and page's URL from the product pages on the
-http://www.epocacosmeticos.com.br and is meant as a technical challenge for the admission process at SIVIE.
+http://www.epocacosmeticos.com.br and is meant as a technical challenge for the admission process at SIEVE.
 """
 import os
 import sys
@@ -21,7 +21,7 @@ __author_email__ = 'flaviocpontes@gmail.com'
 __author__ = '{} <{}>'.format(__author_name__, __author_email__)
 __copyright__ = 'Copyright © 2016 Flávio Pontes'
 __license__ = 'MIT'
-__version_info__ = (0, 1, 'alpha')
+__version_info__ = (1, 0)
 __version__ = '.'.join(map(str, __version_info__))
 
 
@@ -52,12 +52,6 @@ def extract_values(html: str):
     element_tree = lxml.html.document_fromstring(html)
     return {'product_name': extract_product_name(element_tree),
             'page_title': element_tree.xpath('head/title')[0].text}
-
-
-def sanitize_url(param):
-    """Sanitizes the path portion of the URL for non ascii characters"""
-
-    pass
 
 
 def extract_links(html: str):
@@ -91,28 +85,6 @@ def is_product_page(url):
     return False
 
 
-def parse_args(args):
-    """Parses the command line arguments
-
-    Args:
-        args (list): the list of cli arguments. /doesn't include the executable.
-
-    Returns:
-        argparse.namespace
-    """
-    parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
-    parser.add_argument('-d', '--depth', default=1, type=int, help='The maximum link depth to crawl. Must be greater than 0.')
-    parser.add_argument('-o', '--output', type=str, help='The output csv file')
-    parser.add_argument('url', help='The base url for the crawling session')
-    config = parser.parse_args(args)
-    if urllib.parse.urlparse(config.url).netloc != 'www.epocacosmeticos.com.br' :
-        raise ValueError('URL must be from the www.epocacosmeticos.com.br domain')
-    if config.depth < 1:
-        print('Depth must be an integer greater than 0. Setting depth to 1.')
-        config.depth = 1
-    return config
-
-
 def write_values_to_csv(output, values):
     """Writes the values extracted from the product page to the csv file
 
@@ -140,9 +112,42 @@ def get_page_contents(url):
 
 
 def visit_url(url):
+    """Retrives the HTML page at the URL and extracts the product info if present and all its links
+
+    Args:
+        url (str): The URL to be retrieved
+
+    Returns:
+        values (dict): The product data if present or None
+
+    """
     html_page = get_page_contents(url)
     values = extract_values(html_page) if is_product_page(url) else None
     return values, extract_links(html_page)
+
+
+def parse_args(args):
+    """Parses the command line arguments
+
+    Args:
+        args (list): the list of cli arguments. /doesn't include the executable.
+
+    Returns:
+        argparse.namespace
+    """
+    parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
+    parser.add_argument('-d', '--depth', default=1, type=int, help='The maximum link depth to crawl. Must be greater than 0.')
+    parser.add_argument('-o', '--output', type=str, help='The output csv file')
+    parser.add_argument('path', help='The starting path for the crawling')
+    config = parser.parse_args(args)
+    if config.path.startswith('/'):
+        config.path = 'http://www.epocacosmeticos.com.br' + config.path
+    else:
+        raise ValueError()
+    if config.depth < 0:
+        print('Depth must be an integer greater or equal to 0. Setting depth to 0.')
+        config.depth = 0
+    return config
 
 
 def main(args):
@@ -153,11 +158,11 @@ def main(args):
         sys.exit(1)
 
     visited = []
-    horizon = [config.url]
+    horizon = [config.path]
     if not os.path.exists(config.output):
         open(config.output, 'w').close()
 
-    for i in range(config.depth):
+    for i in range(config.depth + 1):
         iteration_horizon = horizon.copy()
         horizon = []
         for n, url in enumerate(iteration_horizon):
