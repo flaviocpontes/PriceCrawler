@@ -117,6 +117,22 @@ class TestMainFunction(unittest.TestCase):
                      'http://www.epocacosmeticos.com.br' + url]]
         self.assertEqual(expected, self.load_result_csv())
 
+    def test_crawl_eternity_product_link_not_found(self):
+        url = '/eternity-25th-anniversary-edition-for-women-eau-de-toilette-calvin-klein-perfume-feminino/p'
+        crawler.main(['-d', '0', '-o', 'teste.csv', url])
+        expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
+                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
+                     'http://www.epocacosmeticos.com.br' + url]]
+        self.assertEqual(expected, self.load_result_csv())
+
+    def test_crawl_invalid_product(self):
+        url = '/invalid-product/p'
+        crawler.main(['-d', '0', '-o', 'teste.csv', url])
+        expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
+                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
+                     'http://www.epocacosmeticos.com.br' + url]]
+        self.assertEqual(expected, self.load_result_csv())
+
     def test_crawl_home_page_depth_0(self):
         crawler.main(['-d', '0', '-o', 'teste.csv', '/'])
         expected = []
