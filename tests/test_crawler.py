@@ -22,8 +22,12 @@ class MockPageGenerator:
         self.mock_page = open(os.path.join(TEST_FILE_PATH, 'mock_page.html')).read()
 
     def __call__(self, url):
+        class MockResponse:
+            url = None
         path = urlparse(url).path
-        return self.mock_page.format(*self.par_by_path.get(path, ['Empty' for n in range(5)]))
+        MockResponse.url = url if self.par_by_path.get(path) \
+            else 'http://www.epocacosmeticos.com.br/?ProductLinkNotFound=' + path
+        return (self.mock_page.format(*self.par_by_path.get(path, ['Empty' for n in range(5)])), MockResponse)
 
 
 class TestExtraction(unittest.TestCase):
@@ -55,16 +59,23 @@ class TestExtraction(unittest.TestCase):
 class TestIsProductPage(unittest.TestCase):
     """Tests for checking if a page is a prodcutd page"""
     def test_is_product_page(self):
-        self.assertTrue(crawler.is_product_page('http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'))
+        self.assertTrue(crawler.is_product_page('http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p',
+                                                'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino/p'))
 
     def test_is_not_product_page(self):
-        self.assertFalse(crawler.is_product_page('http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino'))
+        self.assertFalse(crawler.is_product_page('http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino',
+                                                 'http://www.epocacosmeticos.com.br/lady-million-eau-my-gold-eau-de-toilette-paco-rabanne-perfume-feminino'))
 
-    def test_fake_url(self):
-        self.assertTrue(crawler.is_product_page('http://www.epocacosmeticos.com.br/fake-product/p'))
+    def test_response_error_url(self):
+        self.assertFalse(crawler.is_product_page('http://www.epocacosmeticos.com.br/fake-product/p',
+                                                 'http://www.epocacosmeticos.com.br/?ProductLinkNotFound=fake-product/p'))
+
+    def test_mock_url(self):
+        self.assertTrue(crawler.is_product_page('http://www.epocacosmeticos.com.br/fake-product/p',
+                                                'http://www.epocacosmeticos.com.br/fake-product/p'))
 
     def test_invalid_value(self):
-        self.assertRaises(ValueError, crawler.is_product_page, 123)
+        self.assertRaises(ValueError, crawler.is_product_page, 123, 256)
 
 
 class TestArgParsing(unittest.TestCase):
@@ -120,17 +131,13 @@ class TestMainFunction(unittest.TestCase):
     def test_crawl_eternity_product_link_not_found(self):
         url = '/eternity-25th-anniversary-edition-for-women-eau-de-toilette-calvin-klein-perfume-feminino/p'
         crawler.main(['-d', '0', '-o', 'teste.csv', url])
-        expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
-                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
-                     'http://www.epocacosmeticos.com.br' + url]]
+        expected = []
         self.assertEqual(expected, self.load_result_csv())
 
     def test_crawl_invalid_product(self):
         url = '/invalid-product/p'
         crawler.main(['-d', '0', '-o', 'teste.csv', url])
-        expected = [['Hypnôse Eau de Toilette Lancôme - Perfume Feminino - 30ml',
-                     'Hypnôse Lancôme - Perfume Feminino - Época Cosméticos',
-                     'http://www.epocacosmeticos.com.br' + url]]
+        expected = []
         self.assertEqual(expected, self.load_result_csv())
 
     def test_crawl_home_page_depth_0(self):
@@ -140,11 +147,16 @@ class TestMainFunction(unittest.TestCase):
 
     def test_crawl_home_page_depth_1(self):
         crawler.main(['-d', '1', '-o', 'teste.csv', '/'])
-        self.assertEqual(81, len(self.load_result_csv()))
+        self.assertEqual(80, len(self.load_result_csv()))
 
     def test_crawl_malformed_url(self):
         url = '/cabelos/coloracao/tintura-para-cabelos/Sem Amônia'
         crawler.main(['-d', '0', '-o', 'teste.csv', url])
+        self.assertEqual(0, len(self.load_result_csv()))
+
+    def test_crawl_doubled_id_page(self):
+        url = '/mascara-reestruturadora-monoi-e-argan-nick-vick-mascara-para-cabelos-quimicamente-tratados/p'
+        crawler.main(['-d', '2', '-o', 'teste.csv', url])
         self.assertEqual(0, len(self.load_result_csv()))
 
     def test_crawl_mock_pages_all_products_no_repetitions(self):

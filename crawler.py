@@ -69,32 +69,21 @@ def extract_links(html: str):
     return sorted(list(link_set))
 
 
-def is_product_page(url):
+def is_product_page(url, response_url):
     """Returns True if a page is a Product Page
 
         Args:
             url (str): The url to be evaluated
+            reponse (requests.response): The http response
 
         Returns:
             bool: If the URL is for a product page.
     """
     if type(url) != str:
         raise ValueError("url must be a string")
-    if url.endswith('/p'):
+    if url.endswith('/p') and url == response_url:
         return True
     return False
-
-
-def write_values_to_csv(output, values):
-    """Writes the values extracted from the product page to the csv file
-
-    Args:
-        output (str): The output filename
-        values (list): The list of values to be written to the csv.
-    """
-    with open(output, 'a') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(values)
 
 
 def get_page_contents(url):
@@ -108,7 +97,8 @@ def get_page_contents(url):
         str: The page's HTML content
     """
     print('Visiting url: {}'.format(url))
-    return requests.get(url).text
+    r = requests.get(url)
+    return r.text, r
 
 
 def visit_url(url):
@@ -121,9 +111,21 @@ def visit_url(url):
         values (dict): The product data if present or None
 
     """
-    html_page = get_page_contents(url)
-    values = extract_values(html_page) if is_product_page(url) else None
+    html_page, http_response = get_page_contents(url)
+    values = extract_values(html_page) if is_product_page(url, http_response.url) else None
     return values, extract_links(html_page)
+
+
+def write_values_to_csv(output, values):
+    """Writes the values extracted from the product page to the csv file
+
+    Args:
+        output (str): The output filename
+        values (list): The list of values to be written to the csv.
+    """
+    with open(output, 'a') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(values)
 
 
 def parse_args(args):
@@ -164,6 +166,9 @@ def main(args):
 
     for i in range(config.depth + 1):
         iteration_horizon = horizon.copy()
+        if not iteration_horizon:
+            print("No more links to visit.")
+            break
         horizon = []
         for n, url in enumerate(iteration_horizon):
             if url in visited:
