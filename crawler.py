@@ -11,6 +11,7 @@ import csv
 import argparse
 from multiprocessing.pool import Pool
 from multiprocessing import cpu_count
+from time import sleep
 
 import lxml.html
 import lxml
@@ -102,7 +103,7 @@ def get_page_contents(url):
     return r.text, r
 
 
-def visit_url(url):
+def visit_url(url, retries=3):
     """Retrives the HTML page at the URL and extracts the product info if present and all its links
 
     Args:
@@ -112,9 +113,19 @@ def visit_url(url):
         values (dict): The product data if present or None
 
     """
-    html_page, http_response = get_page_contents(url)
-    values = extract_values(html_page) if is_product_page(url, http_response.url) else None
-    return values, extract_links(html_page), url
+    error = ""
+    for i in range(retries):
+        try:
+            html_page, http_response = get_page_contents(url)
+            values = extract_values(html_page) if is_product_page(url, http_response.url) else None
+            return values, extract_links(html_page), url
+        except IndexError as e:
+            print("Couldn't find productName for page {}".format(url))
+            sleep(1)
+        except Exception as e:
+            print("The error {} occurred while processing page {}".format(e, url))
+            sleep(1)
+    return None, None, url
 
 
 def write_values_to_csv(output, values):
@@ -194,11 +205,11 @@ def main(args):
             task_horizon = iteration_horizon[:100]
             iteration_horizon = iteration_horizon[100:]
             tasks = sorted(list({url for url in task_horizon if url not in visited}))
-            with Pool(processes=cpu_count()*2) as pool:
+            with Pool(processes=cpu_count()*4) as pool:
                 result = pool.map(visit_url, tasks)
             visited = visited + tasks
             for values, links, url in result:
-                horizon.extend(links)
+                horizon.extend(links or [])
                 if values:
                     print('Product page found. Extracted {}'.format(values))
                     write_values_to_csv(config.output, [values.get('product_name'),
