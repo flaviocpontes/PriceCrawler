@@ -9,8 +9,6 @@ import os
 import sys
 import csv
 import argparse
-import urllib.parse
-import urllib.request
 
 import lxml.html
 import lxml
