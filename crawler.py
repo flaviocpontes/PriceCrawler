@@ -113,7 +113,6 @@ def visit_url(url, retries=3):
         values (dict): The product data if present or None
 
     """
-    error = ""
     for i in range(retries):
         try:
             html_page, http_response = get_page_contents(url)
