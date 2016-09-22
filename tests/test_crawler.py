@@ -208,4 +208,35 @@ class TestMainFunction(unittest.TestCase):
                     ['Produto 3', 'Pagina Produto 3', 'http://www.epocacosmeticos.com.br/produto_3/p']]
         self.assertEqual(expected, self.load_result_csv())
 
+    def test_crawl_mock_pages_with_persistence(self):
+        mock_params = {
+            '/pagina_inicial': ('Pagina Inicial', 'Produto Inicial', 'produto_1/p', 'pagina_2', 'produto_3/p'),
+            '/produto_1/p': ('Pagina Produto 1', 'Produto 1', 'produto_3/p', 'pagina_5', 'pagina_6'),
+            '/produto_2/p': ('Pagina Produto 2', 'Produto 2', 'produto_4/p', 'produto_5/p', 'pagina_1'),
+            '/produto_3/p': ('Pagina Produto 3', 'Produto 3', 'produto_2/p', 'produto_4/p', 'produto_6/p'),
+            '/produto_4/p': ('Pagina Produto 4', 'Produto 4', 'pagina_inicial', 'pagina_6', 'produto_5/p'),
+            '/produto_5/p': ('Pagina Produto 5', 'Produto 5', 'produto_7/p', 'produto_8/p', 'pagina_5'),
+            '/produto_6/p': ('Pagina Produto 6', 'Produto 6', 'pagina_inicial', 'pagina_1', 'produto_5/p'),
+            '/produto_7/p': ('Pagina Produto 6', 'Produto 6', 'pagina_inicial', 'pagina_1', 'produto_5/p'),
+            '/pagina_1': ('Pagina 1', 'Página 1', 'produto_1/p', 'pagina_5', 'produto_3/p'),
+            '/pagina_2': ('Pagina 2', 'Página 2', 'produto_2/p', 'pagina_1', 'pagina_3'),
+            '/pagina_3': ('Pagina 3', 'Página 3', 'produto_6/p', 'pagina_1', 'pagina_inicial'),
+            '/pagina_4': ('Pagina 4', 'Página 4', 'produto_8/p', 'pagina_5', 'produto_3/p'),
+            '/pagina_5': ('Pagina 5', 'Página 5', 'produto_2/p', 'pagina_4', 'produto_4/p'),
+            '/pagina_6': ('Pagina 6', 'Página 6', 'pagina_inicial', 'pagina_5', 'produto_3/p'),
+        }
+        with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
+            crawler.main(['-d', '0', '-o', 'teste.csv', '-r', 'teste.json', '/pagina_inicial'])
+        expected = [['Produto 1', 'Pagina Produto 1', 'http://www.epocacosmeticos.com.br/produto_1/p'],
+                    ['Produto 3', 'Pagina Produto 3', 'http://www.epocacosmeticos.com.br/produto_3/p']]
+        self.assertEqual(expected, self.load_result_csv())
+        with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
+            crawler.main(['-d', '0', '-o', 'teste.csv', '-r', 'teste.json'])
+        expected = [['Produto 1', 'Pagina Produto 1', 'http://www.epocacosmeticos.com.br/produto_1/p'],
+                    ['Produto 3', 'Pagina Produto 3', 'http://www.epocacosmeticos.com.br/produto_3/p'],
+                    ['Produto 2', 'Pagina Produto 2', 'http://www.epocacosmeticos.com.br/produto_2/p'],
+                    ['Produto 4', 'Pagina Produto 4', 'http://www.epocacosmeticos.com.br/produto_4/p'],
+                    ['Produto 6', 'Pagina Produto 6', 'http://www.epocacosmeticos.com.br/produto_6/p']]
+        self.assertEqual(expected, self.load_result_csv())
+
 

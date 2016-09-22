@@ -4,6 +4,7 @@
 This package is a crawler for extracting the product's name, page title and page's URL from the product pages on the
 http://www.epocacosmeticos.com.br and is meant as a technical challenge for the admission process at SIEVE.
 """
+import json
 import os
 import sys
 import csv
@@ -139,7 +140,8 @@ def parse_args(args):
     """
     parser = argparse.ArgumentParser(description="Crawls the site www.epocacosmeticos.com.br, acquiring data from the product pages.")
     parser.add_argument('-d', '--depth', default=1, type=int, help='The maximum link depth to crawl. Must be greater than 0.')
-    parser.add_argument('-o', '--output', type=str, help='The output csv file')
+    parser.add_argument('-o', '--output', default='crawl_output.csv', type=str, help='The output csv file')
+    parser.add_argument('-r', '--resume', default=None, type=str, help='The resume file filename')
     parser.add_argument('path', help='The starting path for the crawling')
     config = parser.parse_args(args)
     if config.path.startswith('/'):
@@ -152,6 +154,22 @@ def parse_args(args):
     return config
 
 
+def recover_state(config):
+    if config.resume and os.path.exists(config.resume):
+        with open(config.resume) as json_file:
+            state = json.load(json_file)
+            return state.get('visited'), state.get('horizon')
+    return [], [config.path]
+
+
+def save_state(config, visited, iteration_horizon, horizon):
+    if config.resume:
+        state = {'visited': visited,
+                 'horizon': iteration_horizon + horizon}
+        with open(config.resume, 'w') as json_file:
+            json.dump(state, json_file)
+
+
 def main(args):
     try:
         config = parse_args(args)
@@ -159,8 +177,8 @@ def main(args):
         print(e)
         sys.exit(1)
 
-    visited = []
-    horizon = [config.path]
+    visited, horizon = recover_state(config)
+
     if not os.path.exists(config.output):
         open(config.output, 'w').close()
 
@@ -181,6 +199,7 @@ def main(args):
                 write_values_to_csv(config.output, [values.get('product_name'),
                                                     values.get('page_title'),
                                                     url])
+            save_state(config, visited, iteration_horizon, horizon)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
