@@ -9,6 +9,8 @@ import os
 import sys
 import csv
 import argparse
+from multiprocessing.pool import Pool
+from multiprocessing import cpu_count
 
 import lxml.html
 import lxml
@@ -112,7 +114,7 @@ def visit_url(url):
     """
     html_page, http_response = get_page_contents(url)
     values = extract_values(html_page) if is_product_page(url, http_response.url) else None
-    return values, extract_links(html_page)
+    return values, extract_links(html_page), url
 
 
 def write_values_to_csv(output, values):
@@ -182,21 +184,26 @@ def main(args):
 
     for i in range(config.depth + 1):
         iteration_horizon = horizon.copy()
+        horizon = []
+
         if not iteration_horizon:
             print("No more links to visit.")
             break
-        horizon = []
-        for n, url in enumerate(iteration_horizon):
-            if url in visited:
-                continue
-            values, links = visit_url(url)
-            visited.append(iteration_horizon[n])
-            horizon.extend(links)
-            if values:
-                print('Product page found. Extracted {}'.format(values))
-                write_values_to_csv(config.output, [values.get('product_name'),
-                                                    values.get('page_title'),
-                                                    url])
+
+        while iteration_horizon:
+            task_horizon = iteration_horizon[:100]
+            iteration_horizon = iteration_horizon[100:]
+            tasks = sorted(list({url for url in task_horizon if url not in visited}))
+            with Pool(processes=cpu_count()*2) as pool:
+                result = pool.map(visit_url, tasks)
+            visited = visited + tasks
+            for values, links, url in result:
+                horizon.extend(links)
+                if values:
+                    print('Product page found. Extracted {}'.format(values))
+                    write_values_to_csv(config.output, [values.get('product_name'),
+                                                        values.get('page_title'),
+                                                        url])
             save_state(config, visited, iteration_horizon, horizon)
 
 if __name__ == '__main__':
