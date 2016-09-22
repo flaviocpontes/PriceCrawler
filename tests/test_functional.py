@@ -7,9 +7,11 @@ import os
 import subprocess
 import csv
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import crawler
-from tests import PROJECT_ROOT
+from tests import PROJECT_ROOT, TEST_FILE_PATH
+
 CRAWLER_EXECUTABLE = os.path.join(PROJECT_ROOT, 'crawler.py')
 
 
