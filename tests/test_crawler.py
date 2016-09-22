@@ -106,6 +106,8 @@ class TestMainFunction(unittest.TestCase):
     def setUp(self):
         if os.path.exists('teste.csv'):
             os.remove('teste.csv')
+        if os.path.exists('teste.json'):
+            os.remove('teste.json')
 
     def load_result_csv(self):
         with open('teste.csv') as csvfile:
@@ -227,11 +229,15 @@ class TestMainFunction(unittest.TestCase):
         }
         with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
             crawler.main(['-d', '0', '-o', 'teste.csv', '-r', 'teste.json', '/pagina_inicial'])
+        expected = []
+        self.assertEqual(expected, self.load_result_csv())
+        with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
+            crawler.main(['-d', '0', '-o', 'teste.csv', '-r', 'teste.json', '/pagina_inicial'])
         expected = [['Produto 1', 'Pagina Produto 1', 'http://www.epocacosmeticos.com.br/produto_1/p'],
                     ['Produto 3', 'Pagina Produto 3', 'http://www.epocacosmeticos.com.br/produto_3/p']]
         self.assertEqual(expected, self.load_result_csv())
         with patch('crawler.get_page_contents', MockPageGenerator(mock_params)):
-            crawler.main(['-d', '0', '-o', 'teste.csv', '-r', 'teste.json'])
+            crawler.main(['-d', '0', '-o', 'teste.csv', '-r', 'teste.json', '/pagina_inicial'])
         expected = [['Produto 1', 'Pagina Produto 1', 'http://www.epocacosmeticos.com.br/produto_1/p'],
                     ['Produto 3', 'Pagina Produto 3', 'http://www.epocacosmeticos.com.br/produto_3/p'],
                     ['Produto 2', 'Pagina Produto 2', 'http://www.epocacosmeticos.com.br/produto_2/p'],
