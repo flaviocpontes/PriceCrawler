@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import csv
 import os
 import unittest
@@ -379,3 +381,6 @@ class TextExtractLinks(unittest.TestCase):
     def test_links_hypnose(self):
         home_page = open(os.path.join(TEST_FILE_PATH, 'hypnose-eau-de-toilette-lancome-perfume-feminino.html')).read()
         self.assertEqual(116, len(crawler.extract_links(home_page)))
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Functional tests for the PriceCrawler project.
 """
@@ -226,3 +228,6 @@ class TestMainFunction(unittest.TestCase):
                     ['Produto 4', 'Pagina Produto 4', 'http://www.epocacosmeticos.com.br/produto_4/p'],
                     ['Produto 6', 'Pagina Produto 6', 'http://www.epocacosmeticos.com.br/produto_6/p']]
         self.assertEqual(expected, self.load_result_csv())
+
+if __name__ == '__main__':
+    unittest.main()

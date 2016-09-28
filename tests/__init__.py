@@ -1,5 +1,4 @@
 import os
-import sys
 
 __author_name__ = 'Flávio Pontes'
 __author_email__ = 'flaviocpontes@gmail.com'
