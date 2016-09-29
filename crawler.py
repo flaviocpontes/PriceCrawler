@@ -18,6 +18,8 @@ import lxml
 import requests
 from lxml.cssselect import CSSSelector
 
+BASE_URL = 'http://www.epocacosmeticos.com.br'
+
 __author_name__ = 'Flávio Pontes'
 __author_email__ = 'flaviocpontes@gmail.com'
 __author__ = '{} <{}>'.format(__author_name__, __author_email__)
@@ -67,7 +69,8 @@ def extract_links(html: str):
     """
     element_tree = lxml.html.document_fromstring(html)
     link_set = {link.get('href') for link in element_tree.cssselect('a')
-                if link.get('href') and link.get('href').startswith('http://www.epocacosmeticos.com.br')}
+                if link.get('href') and (link.get('href').startswith('http://www.epocacosmeticos.com.br') or
+                                         link.get('href').startswith('/'))}
     return sorted(list(link_set))
 
 
@@ -99,7 +102,7 @@ def get_page_contents(url):
         str: The page's HTML content
     """
     print('Visiting url: {}'.format(url))
-    r = requests.get(url)
+    r = requests.get(BASE_URL + url if url.startswith('/') else url)
     return r.text, r
 
 
@@ -155,29 +158,13 @@ def parse_args(args):
     parser.add_argument('path', help='The starting path for the crawling')
     config = parser.parse_args(args)
     if config.path.startswith('/'):
-        config.path = 'http://www.epocacosmeticos.com.br' + config.path
+        config.path = BASE_URL + config.path
     else:
         raise ValueError()
     if config.depth < 0:
         print('Depth must be an integer greater or equal to 0. Setting depth to 0.')
         config.depth = 0
     return config
-
-
-def recover_state(config):
-    if config.resume and os.path.exists(config.resume):
-        with open(config.resume) as json_file:
-            state = json.load(json_file)
-            return state.get('visited'), state.get('horizon')
-    return [], [config.path]
-
-
-def save_state(config, visited, iteration_horizon, horizon):
-    if config.resume:
-        state = {'visited': visited,
-                 'horizon': iteration_horizon + horizon}
-        with open(config.resume, 'w') as json_file:
-            json.dump(state, json_file)
 
 
 def main(args):
@@ -187,10 +174,10 @@ def main(args):
         print(e)
         sys.exit(1)
 
-    visited, horizon = recover_state(config)
+    visited = []
+    horizon = [config.path]
 
-    if not os.path.exists(config.output):
-        open(config.output, 'w').close()
+    open(config.output, 'w').close()
 
     for i in range(config.depth + 1):
         iteration_horizon = horizon.copy()
@@ -201,9 +188,7 @@ def main(args):
             break
 
         while iteration_horizon:
-            task_horizon = iteration_horizon[:100]
-            iteration_horizon = iteration_horizon[100:]
-            tasks = sorted(list({url for url in task_horizon if url not in visited}))
+            iteration_horizon, tasks = generate_tasks(iteration_horizon, visited)
             with Pool(processes=cpu_count()*4) as pool:
                 result = pool.map(visit_url, tasks)
             visited = visited + tasks
@@ -214,7 +199,14 @@ def main(args):
                     write_values_to_csv(config.output, [values.get('product_name'),
                                                         values.get('page_title'),
                                                         url])
-            save_state(config, visited, iteration_horizon, horizon)
+
+
+def generate_tasks(iteration_horizon, visited):
+    iteration_horizon = sorted(list({url for url in iteration_horizon if url not in visited}))
+    tasks = iteration_horizon[:800]
+    iteration_horizon = iteration_horizon[800:]
+    return iteration_horizon, tasks
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
